@@ -1,0 +1,1 @@
+*/5 * * * * /bin/bash -c 'export PATH=/usr/bin:/usr/sbin:/bin:/sbin; if ! ps -ef | grep lora_pkt_fwd | grep -v grep >/dev/null; then /etc/init.d/lora-packet-forwarder restart; fi
