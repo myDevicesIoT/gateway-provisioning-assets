@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 
 remote_ctrl() { 
@@ -22,8 +22,12 @@ remote_ctrl() {
         exit 1
     fi
 
-    if [ -z "$SSH_PORT" ]; then
-        SSH_PORT=22
+    if [ -z "$SSH_LOCAL_PORT" ]; then
+        SSH_LOCAL_PORT=22
+    fi
+
+    if [ -z "$SSH_REMOTE_PORT" ]; then
+        SSH_REMOTE_PORT=22
     fi
 
     PRIVATE_KEY_FILE=/tmp/temp_ssh_key
@@ -51,7 +55,11 @@ remote_ctrl() {
         fi
     fi
 
-    ssh -o "ExitOnForwardFailure yes" -N -R $SSH_FORWARD_PORT:localhost:$SSH_PORT $SSH_USERNAME@$SSH_HOST -i $PRIVATE_KEY_FILE &
+    if [ "$SSHD_FORCE_PUBKEY_AUTH" == "true" ]; then
+        echo "Starting sshd with publickey authentication"
+        $(which sshd) -p $SSH_LOCAL_PORT -o "PubkeyAuthentication yes"
+    fi
+    ssh -o "ExitOnForwardFailure yes" -N -R $SSH_FORWARD_PORT:localhost:$SSH_LOCAL_PORT $SSH_USERNAME@$SSH_HOST -p $SSH_REMOTE_PORT -i $PRIVATE_KEY_FILE &
     sleep 2
     rm $PRIVATE_KEY_FILE
 }
@@ -62,28 +70,53 @@ update() {
         exit 1
     fi
 
+    if [ "$UPDATE_FILE_MODE" != "" ] && [ -z "$(echo "$UPDATE_FILE_MODE" | grep -E '^[0-7]{3,4}$')" ]; then
+        echo "\$UPDATE_FILE_MODE is not valid"
+        exit 1
+    fi    
+
     UPDATE_FILE_PATH=/tmp/$(basename $UPDATE_URL)
     if [ "$UPDATE_FILE_PATH" != "/tmp/" ]; then
-        echo Downloading $UPDATE_FILE_PATH
-        curl -s $UPDATE_URL --output $UPDATE_FILE_PATH
+        echo "Downloading $UPDATE_URL"
+        curl -s -f $UPDATE_URL --output $UPDATE_FILE_PATH
+        RESULT=$?
+        if test "$RESULT" != "0"; then
+            echo "Download failed with: $RESULT"
+            rm -f $UPDATE_FILE_PATH
+            exit $RESULT
+        fi
 
-        echo Verifying checksum
+        echo "Verifying checksum"
         DOWNLOAD_MD5=$(md5sum "$UPDATE_FILE_PATH" | cut -d " " -f1)
         if [ $DOWNLOAD_MD5 == $UPDATE_MD5 ]; then
-            echo Checksum matches
-            echo Installing $UPDATE_FILE_PATH
+            echo "Checksum matches"
+            if [ "$UPDATE_TYPE" == "file" ]; then
+                if [ "$UPDATE_DEST" != "" ]; then
+                    echo "Moving file to $UPDATE_DEST"
+                    DEST_DIR=$(dirname $UPDATE_DEST)
+                    mkdir -p $DEST_DIR
+                    mv -f $UPDATE_FILE_PATH $UPDATE_DEST
+                    if [ "$UPDATE_FILE_MODE" != "" ]; then
+                        #If the specified file mode is valid, set it
+                        chmod $UPDATE_FILE_MODE $UPDATE_DEST
+                    fi
+                    exit $?
+                fi
+            fi
+
+            echo "Installing $UPDATE_FILE_PATH"
             UPDATE_OPTIONS=""
             FORCE_REINSTALL=$(echo "$FORCE_REINSTALL" | tr '[:upper:]' '[:lower:]')
             if [ "$FORCE_REINSTALL" == "true" ]; then
                 UPDATE_OPTIONS="--force-reinstall"
             fi
-            echo opkg install $UPDATE_FILE_PATH $UPDATE_OPTIONS
+            echo "opkg install $UPDATE_FILE_PATH $UPDATE_OPTIONS"
             opkg install $UPDATE_FILE_PATH $UPDATE_OPTIONS
         else
-            echo Checksum does not match
+            echo "Checksum does not match"
         fi
 
-        echo Deleting $UPDATE_FILE_PATH
+        echo "Deleting $UPDATE_FILE_PATH"
         rm -f $UPDATE_FILE_PATH
     fi
 }
