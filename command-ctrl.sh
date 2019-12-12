@@ -80,6 +80,12 @@ update() {
         echo "Downloading $UPDATE_URL"
         curl -s -f $UPDATE_URL --output $UPDATE_FILE_PATH
         RESULT=$?
+        if test "$RESULT" == "77" && ! test -f /etc/ssl/certs/ca-certificates.crt; then
+            echo "Download failed, attempting to update certs and retry"
+            update-ca-certificates
+            curl -s -f $UPDATE_URL --output $UPDATE_FILE_PATH
+            RESULT=$?
+        fi
         if test "$RESULT" != "0"; then
             echo "Download failed with: $RESULT"
             rm -f $UPDATE_FILE_PATH
