@@ -32,15 +32,18 @@ remote_ctrl() {
 
     export PRIVATE_KEY_FILE=/tmp/temp_ssh_key
     echo -e "$SSH_PRIVATE_KEY" > "$PRIVATE_KEY_FILE"
+    if command -v dropbearconvert &> /dev/null; then
+        dropbearconvert openssh dropbear "$PRIVATE_KEY_FILE" "$PRIVATE_KEY_FILE"
+    fi
     chmod 600 "$PRIVATE_KEY_FILE"
 
     if [ -z "$SSH_HOST_KEY" ]; then
         echo "\$SSH_HOST_KEY is empty"
     else
-        KNOWN_HOSTS_FILE=~admin/.ssh/known_hosts
+        KNOWN_HOSTS_FILE=~root/.ssh/known_hosts
         KNOWN_HOST="$SSH_HOST $SSH_HOST_KEY"
         if [ ! -f "$KNOWN_HOSTS_FILE" ] || ! grep -Fxq "$KNOWN_HOST" "$KNOWN_HOSTS_FILE"; then
-            mkdir -p ~admin/.ssh
+            mkdir -p ~root/.ssh
             echo "$KNOWN_HOST" >> "$KNOWN_HOSTS_FILE"
         fi
     fi
@@ -48,9 +51,9 @@ remote_ctrl() {
     if [ -z "$SSH_AUTH_KEY" ]; then
         echo "\$SSH_AUTH_KEY is empty"
     else
-        AUTHORIZED_KEYS_FILE=~admin/.ssh/authorized_keys
+        AUTHORIZED_KEYS_FILE=~root/.ssh/authorized_keys
         if [ ! -f "$AUTHORIZED_KEYS_FILE" ] || ! grep -Fxq "$SSH_AUTH_KEY" "$AUTHORIZED_KEYS_FILE"; then
-            mkdir -p ~admin/.ssh
+            mkdir -p ~root/.ssh
             echo "$SSH_AUTH_KEY" >> "$AUTHORIZED_KEYS_FILE"
         fi
     fi
