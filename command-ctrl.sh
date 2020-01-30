@@ -82,9 +82,15 @@ update() {
         echo "Downloading $UPDATE_URL"
         curl -s -f $UPDATE_URL --output $UPDATE_FILE_PATH
         RESULT=$?
-        if test "$RESULT" == "77" && ! test -f /etc/ssl/certs/ca-certificates.crt; then
+        if ( test "$RESULT" == "60" || test "$RESULT" == "77" ) && ! test -f /etc/ssl/certs/ca-certificates.crt; then
             echo "Download failed, attempting to update certs and retry"
-            update-ca-certificates
+            if command -v update-ca-certificates &> /dev/null; then
+                update-ca-certificates
+            else
+                opkg update
+                opkg install ca-certificates
+                opkg upgrade ca-certificates
+            fi
             curl -s -f $UPDATE_URL --output $UPDATE_FILE_PATH
             RESULT=$?
         fi
