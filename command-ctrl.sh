@@ -1,5 +1,17 @@
 #!/bin/sh
 
+add_ssh_entry() {
+    ENTRY=$1
+    SSH_FILE=$2
+    #Add the entry in both .ssh dirs since ssh checks different locations based on env variables and how it is launched, e.g. on boot vs. manually
+    for DIR in ~root/.ssh $HOME/.ssh
+    do
+        if [ ! -f "$DIR/$SSH_FILE" ] || ! grep -Fxq "$ENTRY" "$DIR/$SSH_FILE"; then
+            mkdir -p $DIR
+            echo "$ENTRY" >> "$DIR/$SSH_FILE"
+        fi
+    done
+}
 
 remote_ctrl() { 
     if [ -z "$SSH_HOST" ]; then
@@ -40,22 +52,14 @@ remote_ctrl() {
     if [ -z "$SSH_HOST_KEY" ]; then
         echo "\$SSH_HOST_KEY is empty"
     else
-        KNOWN_HOSTS_FILE=~root/.ssh/known_hosts
         KNOWN_HOST="$SSH_HOST $SSH_HOST_KEY"
-        if [ ! -f "$KNOWN_HOSTS_FILE" ] || ! grep -Fxq "$KNOWN_HOST" "$KNOWN_HOSTS_FILE"; then
-            mkdir -p ~root/.ssh
-            echo "$KNOWN_HOST" >> "$KNOWN_HOSTS_FILE"
-        fi
+        add_ssh_entry "$KNOWN_HOST" known_hosts
     fi
 
     if [ -z "$SSH_AUTH_KEY" ]; then
         echo "\$SSH_AUTH_KEY is empty"
     else
-        AUTHORIZED_KEYS_FILE=~root/.ssh/authorized_keys
-        if [ ! -f "$AUTHORIZED_KEYS_FILE" ] || ! grep -Fxq "$SSH_AUTH_KEY" "$AUTHORIZED_KEYS_FILE"; then
-            mkdir -p ~root/.ssh
-            echo "$SSH_AUTH_KEY" >> "$AUTHORIZED_KEYS_FILE"
-        fi
+        add_ssh_entry "$SSH_AUTH_KEY" authorized_keys
     fi
 
     if [ "$SSHD_FORCE_PUBKEY_AUTH" == "true" ]; then
