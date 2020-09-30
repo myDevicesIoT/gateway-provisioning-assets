@@ -1,5 +1,17 @@
 #!/bin/sh
 
+remove_ssh_entry() {
+    HOST=$1
+    SSH_FILE=$2
+    #Remove the entry in both .ssh dirs since ssh checks different locations based on env variables and how it is launched, e.g. on boot vs. manually
+    for DIR in ~root/.ssh $HOME/.ssh
+    do
+        if [ -f "$DIR/$SSH_FILE" ]; then
+            sed -i "/$HOST/d" "$DIR/$SSH_FILE" 2>&1 >/dev/null
+        fi
+    done
+}
+
 add_ssh_entry() {
     ENTRY=$1
     SSH_FILE=$2
@@ -53,6 +65,7 @@ remote_ctrl() {
         echo "\$SSH_HOST_KEY is empty"
     else
         KNOWN_HOST="$SSH_HOST $SSH_HOST_KEY"
+        remove_ssh_entry "$SSH_HOST" known_hosts
         add_ssh_entry "$KNOWN_HOST" known_hosts
     fi
 
