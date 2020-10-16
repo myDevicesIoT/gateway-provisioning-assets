@@ -1,0 +1,4 @@
+username: user
+password: pass
+ca_server: https://pki.example.com
+profile: us-east-prod
