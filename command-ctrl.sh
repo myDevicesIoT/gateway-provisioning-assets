@@ -1,17 +1,5 @@
 #!/bin/sh
 
-remove_ssh_entry() {
-    HOST=$1
-    SSH_FILE=$2
-    #Remove the entry in both .ssh dirs since ssh checks different locations based on env variables and how it is launched, e.g. on boot vs. manually
-    for DIR in ~root/.ssh $HOME/.ssh
-    do
-        if [ -f "$DIR/$SSH_FILE" ]; then
-            sed -i "/$HOST/d" "$DIR/$SSH_FILE" 2>&1 >/dev/null
-        fi
-    done
-}
-
 add_ssh_entry() {
     ENTRY=$1
     SSH_FILE=$2
@@ -65,7 +53,6 @@ remote_ctrl() {
         echo "\$SSH_HOST_KEY is empty"
     else
         KNOWN_HOST="$SSH_HOST $SSH_HOST_KEY"
-        remove_ssh_entry "$SSH_HOST" known_hosts
         add_ssh_entry "$KNOWN_HOST" known_hosts
     fi
 
@@ -79,8 +66,9 @@ remote_ctrl() {
         echo "Starting sshd with publickey authentication"
         $(which sshd) -p $SSH_LOCAL_PORT -o "PubkeyAuthentication yes"
     fi
-    ssh -o "ExitOnForwardFailure yes" -N -R $SSH_FORWARD_PORT:localhost:$SSH_LOCAL_PORT $SSH_USERNAME@$SSH_HOST -p $SSH_REMOTE_PORT -i $PRIVATE_KEY_FILE &
-    sh -c 'sleep 10; rm $PRIVATE_KEY_FILE'
+    # These commmands close stdout and stderr using ">&- 2>&-" to prevent the calling process from hanging while reading from them
+    ssh -o "ExitOnForwardFailure yes" -N -R $SSH_FORWARD_PORT:localhost:$SSH_LOCAL_PORT $SSH_USERNAME@$SSH_HOST -p $SSH_REMOTE_PORT -i $PRIVATE_KEY_FILE >&- 2>&- &
+    sh -c 'sleep 10; rm $PRIVATE_KEY_FILE' >&- 2>&- &
 }
 
 update() {
@@ -119,7 +107,7 @@ update() {
 
         echo "Verifying checksum"
         DOWNLOAD_MD5=$(md5sum "$UPDATE_FILE_PATH" | cut -d " " -f1)
-        if [ $DOWNLOAD_MD5 == $UPDATE_MD5 ]; then
+        if [ "$DOWNLOAD_MD5" == "$UPDATE_MD5" ]; then
             echo "Checksum matches"
             if [ "$UPDATE_TYPE" == "file" ]; then
                 if [ "$UPDATE_DEST" != "" ]; then
