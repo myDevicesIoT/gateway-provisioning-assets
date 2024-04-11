@@ -1,0 +1,67 @@
+{
+  "SX1301_array_conf":[
+  {
+      "board_freq_band": "US915",
+      "board_rx_freq": 908600000,
+      "rf_chain_conf":[
+      {
+          "rx_enable": true,
+          "tx_enable": true,
+          "rssi_offset": -151,
+          "rssi_offset_coeff_a": 20,
+          "rssi_offset_coeff_b": 2925
+      },{
+          "rx_enable": true,
+          "tx_enable": true,
+          "rssi_offset": -151,
+          "rssi_offset_coeff_a": 20,
+          "rssi_offset_coeff_b": 2925
+      }],
+      "SX1301_conf":[
+      {
+          "chip_enable": true,
+          "chip_center_freq": 904600000,
+    "chip_rf_chain": 0,
+          "chan_multiSF_0": { "chan_rx_freq": 903900000, "spread_factor": "7-10" },
+          "chan_multiSF_1": { "chan_rx_freq": 904100000, "spread_factor": "7-10" },
+          "chan_multiSF_2": { "chan_rx_freq": 904300000, "spread_factor": "7-10" },
+          "chan_multiSF_3": { "chan_rx_freq": 904500000, "spread_factor": "7-10" },
+          "chan_multiSF_4": { "chan_rx_freq": 904700000, "spread_factor": "7-10" },
+          "chan_multiSF_5": { "chan_rx_freq": 904900000, "spread_factor": "7-10" },
+          "chan_multiSF_6": { "chan_rx_freq": 905100000, "spread_factor": "7-10" },
+          "chan_multiSF_7": { "chan_rx_freq": 905300000, "spread_factor": "7-10" },
+          "chan_LoRa_std" : { "chan_rx_freq": 904600000, "bandwidth": 500000, "spread_factor": 8 },
+          "chan_FSK"      : {"chan_rx_freq": 904600000, "bandwidth": 250000, "bit_rate": 100000 }
+
+      }],
+
+      "FSK_sync": "C194C1",
+      "loramac_public":true,
+      "calibration_temperature_celsius_room": 22,
+      "calibration_temperature_code_ad9361": 77
+  }],
+  "gateway_conf": {
+
+      "server_address": "localhost",
+      "serv_port_up": 1700,
+      "serv_port_down": 1700,
+
+      "keepalive_interval": 10,
+      "stat_interval": 30,
+      "push_timeout_ms": 100,
+      "forward_crc_valid": true,
+      "forward_crc_error": false,
+      "forward_crc_disabled": false,
+     "beacon_period": 0,
+      "beacon_freq_hz": 923300000,
+      "beacon_freq_nb": 8,
+      "beacon_freq_step": 600000,
+      "beacon_datarate": 12,
+      "beacon_bw_hz": 500000,
+      "beacon_power": 30,
+      "beacon_infodesc": 0,
+
+      "use_utc_timestamp": 0,
+      "use_gps_timestamp": 1
+  }
+}

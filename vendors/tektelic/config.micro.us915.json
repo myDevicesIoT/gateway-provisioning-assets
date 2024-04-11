@@ -1,0 +1,32 @@
+{    "SX1301_array_conf":[
+  {
+      "board_freq_band": "US915",
+      "SX1301_conf":[
+      {
+          "chip_enable": true,             
+          "chan_multiSF_0": {"chan_rx_freq": 903900000, "spread_factor": "7-10" },
+          "chan_multiSF_1": {"chan_rx_freq": 904100000, "spread_factor": "7-10" },
+          "chan_multiSF_2": {"chan_rx_freq": 904300000, "spread_factor": "7-10" },
+          "chan_multiSF_3": {"chan_rx_freq": 904500000, "spread_factor": "7-10" },
+          "chan_multiSF_4": {"chan_rx_freq": 904700000, "spread_factor": "7-10" },
+          "chan_multiSF_5": {"chan_rx_freq": 904900000, "spread_factor": "7-10" },
+          "chan_multiSF_6": {"chan_rx_freq": 905100000, "spread_factor": "7-10" },
+          "chan_multiSF_7": {"chan_rx_freq": 905300000, "spread_factor": "7-10" },
+          "chan_LoRa_std" : {"chan_rx_freq": 904600000, "bandwidth": 500000, "spread_factor": 8 },
+          "chan_FSK"      : {"chan_rx_freq": 904600000, "bandwidth": 250000, "bit_rate": 100000 }
+      }],
+      "loramac_public":true,
+      "aes_key": "ABCDEF0123456789ABCDEF0123456789"
+  }],
+  "gateway_conf": {
+      "server_address": "localhost",
+      "serv_port_up": 1700,
+      "serv_port_down": 1700,
+      "keepalive_interval": 10,
+      "stat_interval": 240,
+      "push_timeout_ms": 100,
+      "forward_crc_valid": true,
+      "forward_crc_error": false,
+      "forward_crc_disabled": false
+  }
+}
